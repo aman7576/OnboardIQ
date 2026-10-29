@@ -103,7 +103,11 @@ export function chatRouter(deps: {
     const timer = setTimeout(() => controller.abort(), CHAT_TIMEOUT_MS);
     try {
       res.json({ reply: await deps.chat.reply(system, parsed.data.messages, controller.signal) });
-    } catch {
+    } catch (err) {
+      // Reason only (for example "HTTP 401"); the client never puts the key or the prompt in its errors.
+      console.warn(
+        `[chat] model call failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+      );
       throw new HttpError(502, 'CHAT_UNAVAILABLE', 'The assistant could not answer right now');
     } finally {
       clearTimeout(timer);
