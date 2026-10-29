@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://onboardiq-api.onrender.com/api/:path*"
+      "destination": "https://onboardiq-api-4289.onrender.com/api/:path*"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

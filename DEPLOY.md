@@ -12,13 +12,13 @@ The frontend runs on **Vercel**. The API needs a long-running server and Postgre
    (rules, watchlists, occupations), so no manual database step is needed.
 5. Open the `onboardiq-api` service > **Environment** and copy **`STAFF_ENROLLMENT_CODE`**. New bank officers need it to
    register at `/officer/register`.
-6. Note the service URL, for example `https://onboardiq-api.onrender.com`.
+6. Note the service URL, for example `https://onboardiq-api-4289.onrender.com`.
 
 ## 2. Frontend on Vercel
 
 1. https://vercel.com/new > import the same repository.
 2. Set **Root Directory** to `frontend`. Framework (Vite), build command and output folder are detected.
-3. If your Render URL is not `https://onboardiq-api.onrender.com`, edit the `destination` in
+3. If your Render URL is not `https://onboardiq-api-4289.onrender.com`, edit the `destination` in
    [`frontend/vercel.json`](frontend/vercel.json) and push.
 4. Deploy.
 
