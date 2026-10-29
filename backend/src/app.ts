@@ -51,6 +51,8 @@ export interface AppConfig {
   extractionProvider: 'mock' | 'ai';
   /** Enrollment code for new bank officers (STAFF_ENROLLMENT_CODE); unset = officer registration off. */
   staffEnrollmentCode?: string;
+  /** Reverse proxies in front of the API (TRUST_PROXY_HOPS); 0 = none, req.ip is the socket address. */
+  trustProxyHops?: number;
 }
 
 export interface AppDeps {
@@ -112,6 +114,7 @@ export function createApp(deps: AppDeps): Express {
 
   const app = express();
   app.disable('x-powered-by');
+  if (config.trustProxyHops) app.set('trust proxy', config.trustProxyHops);
   app.use(helmet());
   app.use(express.json({ limit: '1mb' }));
   if (deps.log) app.use(requestLogger(deps.log));

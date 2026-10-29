@@ -1,0 +1,38 @@
+# Render Blueprint: one click creates the API and its PostgreSQL database.
+# After the first deploy, open the API service > Environment and copy STAFF_ENROLLMENT_CODE (new officers need it).
+databases:
+  - name: onboardiq-db
+    plan: free
+    databaseName: onboardiq
+    user: onboardiq
+
+services:
+  - type: web
+    name: onboardiq-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: onboardiq-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CORE_BANKING_SERVICE_KEY
+        generateValue: true
+      - key: STAFF_ENROLLMENT_CODE
+        generateValue: true
+      # Real uploads are read by the rules-based extractor (the "mock" provider only knows the supplied sample files).
+      - key: EXTRACTION_PROVIDER
+        value: ai
+      # Vercel + Render are two proxies in front of the API; this makes req.ip the real client.
+      - key: TRUST_PROXY_HOPS
+        value: '2'
+      # Paste your Groq key in the Render dashboard (applicant chatbot). Leave empty to switch the chatbot off.
+      - key: GROQ_API_KEY
+        sync: false

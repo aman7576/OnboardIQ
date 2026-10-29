@@ -58,6 +58,8 @@ const envSchema = z
     GROQ_MODEL: z.string().min(1).default('openai/gpt-oss-120b'),
     // Applicant chatbot: on whenever GROQ_API_KEY is set.
     GROQ_CHAT_MODEL: z.string().min(1).default('qwen/qwen3.8-27b'),
+    // Number of reverse proxies in front of the API (for example Vercel and Render = 2), so req.ip is the real client.
+    TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
     // FR-3: provider is chosen by configuration, not code.
     EXTRACTION_PROVIDER: z
       .enum(['mock', 'ai'], { error: 'must be "mock" or "ai"' })

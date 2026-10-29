@@ -35,6 +35,7 @@ function start(): void {
       dataDir: dataDir(env),
       outputDir: outputDir(env),
       extractionProvider: env.EXTRACTION_PROVIDER,
+      trustProxyHops: env.TRUST_PROXY_HOPS,
       ...(env.STAFF_ENROLLMENT_CODE ? { staffEnrollmentCode: env.STAFF_ENROLLMENT_CODE } : {}),
     },
     ...(extractionLlm ? { llm: extractionLlm } : {}),

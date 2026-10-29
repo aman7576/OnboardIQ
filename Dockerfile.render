@@ -1,0 +1,26 @@
+# Production image for Render (build context: repo root). It bundles the data pack's reference files
+# (rules, watchlists) because the context is the whole repository; the backend-only Dockerfile is for compose.
+FROM node:22-alpine AS build
+RUN apk add --no-cache openssl
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci
+COPY backend/ .
+RUN npm run build
+
+FROM node:22-alpine AS runtime
+RUN apk add --no-cache openssl
+ENV NODE_ENV=production DATA_DIR=/data OUTPUT_DIR=/output STORAGE_DIR=/storage
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist dist
+COPY --from=build /app/prisma prisma
+COPY --from=build /app/node_modules/.prisma node_modules/.prisma
+COPY csvFiles /data
+# OCR keeps its language data in the working directory, so the app user must be able to write there.
+RUN mkdir -p /storage /output && chown -R node:node /app /storage /output
+USER node
+EXPOSE 3000
+# Every start: apply migrations, load the reference data (idempotent), then serve.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/cli/import.js reference && exec node dist/server.js"]
