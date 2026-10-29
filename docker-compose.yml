@@ -1,0 +1,60 @@
+# One command: cp .env.example .env (edit secrets) && docker compose up --build
+# Variables come from .env; compose stops with a clear message if a required one is missing.
+name: onboardiq
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
+    ports:
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      SESSION_TTL_MINUTES: ${SESSION_TTL_MINUTES:-60}
+      CORE_BANKING_SERVICE_KEY: ${CORE_BANKING_SERVICE_KEY:?set CORE_BANKING_SERVICE_KEY in .env}
+      EXTRACTION_PROVIDER: ${EXTRACTION_PROVIDER:-mock}
+      # Optional LLM features (off unless set in .env)
+      EXTRACTION_LLM: ${EXTRACTION_LLM:-none}
+      REVIEW_SUMMARY_LLM: ${REVIEW_SUMMARY_LLM:-none}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      EXTRACTION_LLM_MODEL: ${EXTRACTION_LLM_MODEL:-claude-haiku-5-5}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-120b}
+      DATA_DIR: /data
+      OUTPUT_DIR: /output
+      STORAGE_DIR: /storage
+    volumes:
+      # Supplied data pack, read-only: the app must never alter input files.
+      - ./csvFiles:/data:ro
+      - ./output:/output
+      - docstore:/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - '127.0.0.1:8080:80'
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  docstore:

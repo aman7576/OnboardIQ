@@ -1,0 +1,166 @@
+{
+  "source": "database",
+  "allPassed": true,
+  "checks": [
+    {
+      "name": "required file decisions_output.csv exists and is not empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "required file extraction_output.csv exists and is not empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "required file ai_decisions_output.csv exists and is not empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "required file evaluation_report.md exists and is not empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "required file model_card.md exists and is not empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "decisions_output.csv: parses as CSV with a constant column count (no extra columns)",
+      "ok": true,
+      "detail": "100 rows"
+    },
+    {
+      "name": "decisions_output.csv: header and column order are exactly as specified",
+      "ok": true,
+      "detail": "application_id,decision,reason_codes,name_match_score,risk_category,rekyc_due_date"
+    },
+    {
+      "name": "decisions_output.csv: one row per evaluation application (100)",
+      "ok": true,
+      "detail": "found 100"
+    },
+    {
+      "name": "decisions_output.csv: application ids match the applications file, in order, no duplicates",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "decisions_output.csv: values, dates, reason codes and empty-cell conventions are valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ai_decisions_output.csv: parses as CSV with a constant column count (no extra columns)",
+      "ok": true,
+      "detail": "100 rows"
+    },
+    {
+      "name": "ai_decisions_output.csv: header and column order are exactly as specified",
+      "ok": true,
+      "detail": "application_id,decision,reason_codes,name_match_score,risk_category,rekyc_due_date"
+    },
+    {
+      "name": "ai_decisions_output.csv: one row per evaluation application (100)",
+      "ok": true,
+      "detail": "found 100"
+    },
+    {
+      "name": "ai_decisions_output.csv: application ids match the applications file, in order, no duplicates",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "ai_decisions_output.csv: values, dates, reason codes and empty-cell conventions are valid",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "extraction_output.csv: parses as CSV with 4 columns on every row (no extra columns)",
+      "ok": true,
+      "detail": "1583 rows"
+    },
+    {
+      "name": "extraction_output.csv: header and column order are exactly doc_id,field_name,value,confidence",
+      "ok": true,
+      "detail": "doc_id,field_name,value,confidence"
+    },
+    {
+      "name": "extraction_output.csv: exactly one doc_type row per evaluation document (296)",
+      "ok": true,
+      "detail": "296 doc_type rows"
+    },
+    {
+      "name": "extraction_output.csv: no row refers to a document outside the evaluation set",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "extraction_output.csv: every value is valid for its field (dates YYYY-MM-DD, PAN, pincode, last 4) and belongs to the document type",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "extraction_output.csv: each doc_type row comes before that document's field rows",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md contains section \"AI-1 document classification\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md contains section \"AI-2 field extraction\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md contains section \"AI-4 confidence calibration\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md contains section \"Evaluation set (no labels)\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md contains section \"Limitations\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "evaluation_report.md states that the evaluation set has no labels and claims no accuracy for it",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "model_card.md contains section \"Purpose\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "model_card.md contains section \"Responsible AI\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "model_card.md contains section \"Limitations\"",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no generated file contains a timestamp (so output is repeatable)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "sample mock output reproduces all 60 expected_* rows (sample/decisions_sample_output.csv)",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

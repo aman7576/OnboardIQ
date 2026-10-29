@@ -1,0 +1,511 @@
+// OnboardIQ database schema.
+// Imported tables keep the source CSV column names exactly (snake_case) so nothing is renamed
+// silently. Every imported row stores source_row_hash (SHA-256 of the raw row) for idempotent
+// re-import: same key + same hash = skipped, same key + different hash = rejected as a conflict.
+// Hand-written SQL in the migration adds append-only audit triggers and CHECK constraints.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums (values copied from the spec, sections 3, 4, 6.1, 6.1.1) ─────────────
+
+enum Dataset {
+  SAMPLE
+  EVAL
+  LIVE // created through the application form
+}
+
+enum Role {
+  APPLICANT
+  KYC_OFFICER
+  COMPLIANCE_OFFICER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum PepCategory {
+  DOMESTIC
+  RCA
+}
+
+enum DeclaredDocType {
+  PAN_CARD
+  AADHAAR_CARD
+  ELECTRICITY_BILL
+  BANK_STATEMENT
+  DRIVING_LICENCE
+}
+
+enum ExtractionProvider {
+  MOCK
+  AI
+}
+
+enum FieldSource {
+  EXTRACTOR
+  OFFICER // R-additional: corrected field gets confidence 1.00 and source OFFICER
+}
+
+enum Decision {
+  APPROVE
+  REVIEW
+  REJECT
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  EXTRACTING
+  AUTO_APPROVED
+  IN_REVIEW
+  RESUBMISSION_REQUESTED
+  PENDING_CHECKER
+  APPROVED
+  REJECTED
+  AUTO_REJECTED
+  CLOSED_EXPIRED
+}
+
+enum EvaluationTrigger {
+  SUBMISSION
+  FIELD_CORRECTION
+  RESUBMISSION
+  RESCREEN
+}
+
+enum WatchlistType {
+  SANCTIONS
+  PEP
+}
+
+enum ScreeningResult {
+  MATCH
+  POSSIBLE
+}
+
+enum Recommendation {
+  APPROVE
+  REJECT
+  REQUEST_RESUBMISSION
+}
+
+enum CheckerAction {
+  APPROVE
+  REJECT
+  SEND_BACK
+}
+
+enum AuditEventType {
+  STATUS_CHANGED
+  DOCUMENT_UPLOADED
+  DOCUMENT_VIEWED
+  EXTRACTION_RECORDED
+  FIELD_CORRECTED
+  DECISION_RECORDED
+  WATCHLIST_HIT
+  RECOMMENDATION_RECORDED
+  CHECKER_DECISION_RECORDED
+  ACCOUNT_OPENED
+  CONFIG_CHANGED
+  USER_REGISTERED
+  LOGIN_SUCCEEDED
+  LOGIN_FAILED
+  LOGOUT
+  ACCESS_DENIED
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  email         String   @unique
+  display_name  String
+  role          Role
+  password_hash String?
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(3)
+
+  applications    Application[]
+  documents       Document[]
+  corrections     FieldCorrection[]
+  recommendations OfficerRecommendation[]
+  checker_actions CheckerDecision[]
+  audit_events    AuditEvent[]
+  sessions        Session[]
+
+  @@map("users")
+}
+
+// Server-side login sessions. Only a keyed hash of the bearer token is stored, so a database
+// leak does not yield usable tokens; logout sets revoked_at.
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  user_id    String    @db.Uuid
+  token_hash String    @unique @db.Char(64)
+  created_at DateTime  @default(now()) @db.Timestamptz(3)
+  expires_at DateTime  @db.Timestamptz(3)
+  revoked_at DateTime? @db.Timestamptz(3)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@map("sessions")
+}
+
+// ── Reference data (case_02_rules_config, occupations, watchlists, customers) ──
+
+model RuleConfig {
+  id            Int      @id @default(autoincrement())
+  version       String // "version" key of the JSON file
+  config        Json // the JSON object exactly as supplied
+  source_file   String
+  source_sha256 String   @unique @db.Char(64)
+  is_active     Boolean  @default(false)
+  loaded_at     DateTime @default(now()) @db.Timestamptz(3)
+
+  evaluations RuleEvaluation[]
+
+  @@map("rule_config")
+}
+
+model Occupation {
+  occupation_code String    @id
+  description     String
+  risk_level      RiskLevel
+  source_row_hash String    @db.Char(64)
+
+  applications Application[]
+
+  @@map("occupations")
+}
+
+model SanctionsEntry {
+  list_id         String    @id
+  name            String
+  alias           String?
+  dob             DateTime? @db.Date
+  nationality     String
+  program         String
+  source_row_hash String    @db.Char(64)
+
+  @@map("sanctions_list")
+}
+
+model PepEntry {
+  pep_id          String      @id
+  name            String
+  dob             DateTime    @db.Date
+  position        String
+  category        PepCategory
+  source_row_hash String      @db.Char(64)
+
+  @@map("pep_list")
+}
+
+model ExistingCustomer {
+  customer_id     String   @id
+  full_name       String
+  pan_number      String   @unique // R17 lookup key
+  dob             DateTime @db.Date
+  source_row_hash String   @db.Char(64)
+
+  @@map("existing_customers")
+}
+
+// ── Applications and documents ─────────────────────────────────────────────────
+
+model Application {
+  application_id        String            @id
+  dataset               Dataset
+  application_date      DateTime          @db.Date
+  full_name             String
+  dob                   DateTime          @db.Date
+  gender                String
+  pan_number            String
+  aadhaar_last4         String            @db.Char(4) // only the last 4 digits are ever stored
+  mobile                String
+  email                 String
+  address               String
+  city                  String
+  state                 String
+  pincode               String
+  occupation_code       String
+  annual_income         Int
+  kyc_consent           Boolean? // captured on the form; not present in the supplied files
+  submission_round      Int               @default(1) // +1 on every resubmission; later rounds supersede earlier documents
+  resubmission_deadline DateTime?         @db.Timestamptz(3) // set when a resubmission is requested (now + resubmission_sla_days)
+  rekyc_due_date        DateTime?         @db.Date // set on final approval, from the latest evaluation
+  status                ApplicationStatus @default(SUBMITTED)
+  version               Int               @default(0) // optimistic locking: UPDATE ... WHERE version = ?
+  applicant_user_id     String?           @db.Uuid
+  source_row_hash       String?           @db.Char(64) // null for LIVE applications
+  created_at            DateTime          @default(now()) @db.Timestamptz(3)
+  updated_at            DateTime          @updatedAt @db.Timestamptz(3)
+
+  occupation      Occupation              @relation(fields: [occupation_code], references: [occupation_code])
+  applicant       User?                   @relation(fields: [applicant_user_id], references: [id])
+  expected        ApplicationExpected?
+  documents       Document[]
+  evaluations     RuleEvaluation[]
+  corrections     FieldCorrection[]
+  recommendations OfficerRecommendation[]
+  checker_actions CheckerDecision[]
+  screening       ScreeningMatch[]
+  account         CoreBankingAccount?
+  audit_events    AuditEvent[]
+
+  @@index([dataset, status])
+  @@index([pan_number])
+  @@index([applicant_user_id])
+  @@map("applications")
+}
+
+// The five expected_* columns of the sample file, kept apart from business data (golden test only).
+model ApplicationExpected {
+  application_id            String @id
+  expected_decision         String
+  expected_reason_codes     String
+  expected_name_match_score String
+  expected_risk_category    String
+  expected_rekyc_due_date   String
+
+  application Application @relation(fields: [application_id], references: [application_id], onDelete: Cascade)
+
+  @@map("application_expected")
+}
+
+model Document {
+  doc_id            String          @id
+  application_id    String
+  file_name         String
+  declared_doc_type DeclaredDocType
+  text              String // OCR text = the uploaded .txt file content (UTF-8)
+  sha256            String          @db.Char(64) // SHA-256 of the UTF-8 bytes of text
+  size_bytes        Int
+  dataset           Dataset
+  uploaded_by       String?         @db.Uuid
+  submission_round  Int             @default(1)
+  source_row_hash   String?         @db.Char(64)
+  created_at        DateTime        @default(now()) @db.Timestamptz(3)
+
+  application  Application       @relation(fields: [application_id], references: [application_id])
+  uploader     User?             @relation(fields: [uploaded_by], references: [id])
+  extractions  Extraction[]
+  truth        DocumentTruth?
+  corrections  FieldCorrection[]
+  audit_events AuditEvent[]
+
+  // NFR idempotency: the same file content for the same application is never stored twice.
+  @@unique([application_id, sha256])
+  @@index([application_id])
+  @@map("documents")
+}
+
+// One extraction run of one document by one provider version.
+model Extraction {
+  id                String             @id @default(uuid()) @db.Uuid
+  doc_id            String
+  provider          ExtractionProvider
+  extractor_version String // model governance: rules/model/prompt version
+  created_at        DateTime           @default(now()) @db.Timestamptz(3)
+
+  document Document         @relation(fields: [doc_id], references: [doc_id])
+  fields   ExtractedField[]
+
+  @@unique([doc_id, provider, extractor_version])
+  @@map("extractions")
+}
+
+// Long format exactly as the extraction files: one row per (document, field_name), doc_type included.
+model ExtractedField {
+  id              String      @id @default(uuid()) @db.Uuid
+  extraction_id   String      @db.Uuid
+  doc_id          String
+  field_name      String
+  value           String // raw text: low-confidence misreads (e.g. "I993-06-28") are kept as read
+  confidence      Decimal     @db.Decimal(5, 4)
+  source          FieldSource @default(EXTRACTOR)
+  source_row_hash String?     @db.Char(64)
+
+  extraction Extraction @relation(fields: [extraction_id], references: [id], onDelete: Cascade)
+
+  @@unique([extraction_id, field_name])
+  @@index([doc_id])
+  @@map("extracted_fields")
+}
+
+// Ground truth for the sample documents (AI evaluation only). Values kept as text, empty -> null.
+model DocumentTruth {
+  doc_id          String  @id
+  doc_type        String
+  name            String?
+  dob             String?
+  gender          String?
+  pan_number      String?
+  aadhaar_last4   String?
+  address         String?
+  pincode         String?
+  document_date   String?
+  valid_until     String?
+  source_row_hash String  @db.Char(64)
+
+  document Document @relation(fields: [doc_id], references: [doc_id])
+
+  @@map("document_truth")
+}
+
+// ── Review workflow ────────────────────────────────────────────────────────────
+
+model FieldCorrection {
+  id             String   @id @default(uuid()) @db.Uuid
+  application_id String
+  doc_id         String
+  field_name     String
+  old_value      String?
+  old_confidence Decimal? @db.Decimal(5, 4)
+  new_value      String
+  reason         String
+  corrected_by   String   @db.Uuid
+  created_at     DateTime @default(now()) @db.Timestamptz(3)
+
+  application Application @relation(fields: [application_id], references: [application_id])
+  document    Document    @relation(fields: [doc_id], references: [doc_id])
+  officer     User        @relation(fields: [corrected_by], references: [id])
+
+  @@index([application_id, created_at])
+  @@map("field_corrections")
+}
+
+// One run of the pure rules engine; the latest row per application is the current decision.
+model RuleEvaluation {
+  id                  String             @id @default(uuid()) @db.Uuid
+  application_id      String
+  trigger             EvaluationTrigger
+  decision            Decision
+  reason_codes        String[] // in rule order (R1 first)
+  name_match_score    Float? // full precision; rounded to 4 dp only on output
+  risk_category       RiskLevel?
+  rekyc_due_date      DateTime?          @db.Date
+  trace               Json // rule-by-rule values compared, for the explanation screen
+  rules_version       String // engine code version
+  rule_config_id      Int
+  extraction_provider ExtractionProvider
+  created_at          DateTime           @default(now()) @db.Timestamptz(3)
+
+  application Application      @relation(fields: [application_id], references: [application_id])
+  rule_config RuleConfig       @relation(fields: [rule_config_id], references: [id])
+  screening   ScreeningMatch[]
+
+  @@index([application_id, created_at])
+  @@map("rule_evaluations")
+}
+
+model ScreeningMatch {
+  id             String          @id @default(uuid()) @db.Uuid
+  evaluation_id  String          @db.Uuid
+  application_id String
+  list_type      WatchlistType
+  entry_id       String // list_id or pep_id
+  matched_name   String // the entry name or alias that matched
+  similarity     Float
+  declared_dob   DateTime        @db.Date
+  entry_dob      DateTime?       @db.Date
+  result         ScreeningResult
+  created_at     DateTime        @default(now()) @db.Timestamptz(3)
+
+  evaluation  RuleEvaluation @relation(fields: [evaluation_id], references: [id], onDelete: Cascade)
+  application Application    @relation(fields: [application_id], references: [application_id])
+
+  @@index([application_id])
+  @@map("screening_matches")
+}
+
+model OfficerRecommendation {
+  id             String         @id @default(uuid()) @db.Uuid
+  application_id String
+  officer_id     String         @db.Uuid
+  recommendation Recommendation
+  comment        String // >= 10 characters (CHECK constraint in migration)
+  created_at     DateTime       @default(now()) @db.Timestamptz(3)
+
+  application     Application       @relation(fields: [application_id], references: [application_id])
+  officer         User              @relation(fields: [officer_id], references: [id])
+  checker_actions CheckerDecision[]
+
+  @@index([application_id, created_at])
+  @@map("officer_recommendations")
+}
+
+model CheckerDecision {
+  id                String        @id @default(uuid()) @db.Uuid
+  application_id    String
+  checker_id        String        @db.Uuid
+  recommendation_id String?       @db.Uuid // null for a HIGH-risk APPROVE with no officer step
+  action            CheckerAction
+  comment           String
+  created_at        DateTime      @default(now()) @db.Timestamptz(3)
+
+  application    Application            @relation(fields: [application_id], references: [application_id])
+  checker        User                   @relation(fields: [checker_id], references: [id])
+  recommendation OfficerRecommendation? @relation(fields: [recommendation_id], references: [id])
+
+  @@index([application_id, created_at])
+  @@map("checker_decisions")
+}
+
+// Mock core-banking result on final approval.
+model CoreBankingAccount {
+  id             String   @id @default(uuid()) @db.Uuid
+  application_id String   @unique
+  customer_id    String   @unique
+  account_number String   @unique
+  created_at     DateTime @default(now()) @db.Timestamptz(3)
+
+  application Application @relation(fields: [application_id], references: [application_id])
+
+  @@map("core_banking_accounts")
+}
+
+// ── Audit (append-only: UPDATE and DELETE are blocked by a trigger) ────────────
+
+model AuditEvent {
+  id             BigInt         @id @default(autoincrement())
+  event_type     AuditEventType
+  application_id String?
+  doc_id         String?
+  actor_user_id  String?        @db.Uuid
+  actor_role     String // a Role value, or SYSTEM
+  before         Json?
+  after          Json?
+  details        Json?
+  created_at     DateTime       @default(now()) @db.Timestamptz(3)
+
+  application Application? @relation(fields: [application_id], references: [application_id])
+  document    Document?    @relation(fields: [doc_id], references: [doc_id])
+  actor       User?        @relation(fields: [actor_user_id], references: [id])
+
+  @@index([application_id, id])
+  @@index([event_type, created_at])
+  @@map("audit_events")
+}
+
+// ── Import provenance ──────────────────────────────────────────────────────────
+
+model ImportRun {
+  id          Int      @id @default(autoincrement())
+  dataset     String // REFERENCE, SAMPLE or EVAL
+  files       Json // [{ file, sha256, rows }]
+  summary     Json // per table: read / inserted / skipped / rejected
+  finished_at DateTime @default(now()) @db.Timestamptz(3)
+
+  @@map("import_runs")
+}

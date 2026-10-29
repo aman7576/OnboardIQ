@@ -1,0 +1,1510 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OnboardIQ API",
+    "version": "1.0.0",
+    "description": "Savings-account onboarding for Deccan Digital Bank (HCLTech BFSI challenge, use case 02). AI proposes, rules decide, humans approve. Errors are JSON `{ error, message, fields? }`."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "security": [
+    {
+      "bearer": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Opaque session token from /auth/login"
+      },
+      "serviceKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-service-key"
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Liveness of the API",
+        "description": "No authentication.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/health/db": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Database reachability and latency",
+        "description": "No authentication.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/openapi.json": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "This document",
+        "description": "No authentication.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Register an applicant account (role is always APPLICANT)",
+        "description": "No authentication.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  },
+                  "display_name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 80
+                  }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "display_name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Sign in; returns an opaque bearer token (60 minutes)",
+        "description": "No authentication.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 254
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "429": {
+            "description": "Too many failed logins"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Revoke the current session",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "The signed-in user",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          }
+        }
+      }
+    },
+    "/api/v1/reference/occupations": {
+      "get": {
+        "tags": [
+          "Reference"
+        ],
+        "summary": "Occupations for the application form",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          }
+        }
+      }
+    },
+    "/api/v1/applications": {
+      "post": {
+        "tags": [
+          "Applications"
+        ],
+        "summary": "Create an application (FR-2). Aadhaar last 4 digits only; a 12-digit value is refused",
+        "description": "Applicant only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120
+                  },
+                  "dob": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": [
+                      "M",
+                      "F"
+                    ]
+                  },
+                  "pan_number": {
+                    "type": "string",
+                    "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]$"
+                  },
+                  "aadhaar_last4": {
+                    "type": "string"
+                  },
+                  "mobile": {
+                    "type": "string",
+                    "pattern": "^[6-9][0-9]{9}$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 254,
+                    "format": "email",
+                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "city": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "state": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "pincode": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{5}$"
+                  },
+                  "occupation_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 60
+                  },
+                  "annual_income": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000000000
+                  },
+                  "consent_kyc": {
+                    "type": "boolean",
+                    "const": true
+                  }
+                },
+                "required": [
+                  "full_name",
+                  "dob",
+                  "gender",
+                  "pan_number",
+                  "aadhaar_last4",
+                  "mobile",
+                  "email",
+                  "address",
+                  "city",
+                  "state",
+                  "pincode",
+                  "occupation_code",
+                  "annual_income",
+                  "consent_kyc"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/mine": {
+      "get": {
+        "tags": [
+          "Applications"
+        ],
+        "summary": "The caller's own applications",
+        "description": "Applicant only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}": {
+      "get": {
+        "tags": [
+          "Applications"
+        ],
+        "summary": "Application detail. Applicant: own case, plain-language reasons and timeline. Staff: extracted fields with confidence, rule trace, screening (decision response of spec 6.3)",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/documents": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Document list (no text)",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Upload .txt documents (UTF-8, at most 1 MB each, at least 3 on first submission, one declared_doc_type per file). Same file again is not duplicated (SHA-256)",
+        "description": "Applicant only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files",
+                  "declared_doc_type"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "declared_doc_type": {
+                    "type": "array",
+                    "items": {
+                      "enum": [
+                        "PAN_CARD",
+                        "AADHAAR_CARD",
+                        "ELECTRICITY_BILL",
+                        "BANK_STATEMENT",
+                        "DRIVING_LICENCE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          },
+          "422": {
+            "description": "File or business validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/documents/{docId}": {
+      "get": {
+        "tags": [
+          "Documents"
+        ],
+        "summary": "Document text; every view is audited (FR-9)",
+        "description": "Any signed-in user; objects are filtered by ownership/role.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/submit": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Submit: SUBMITTED -> EXTRACTING -> routed by the rules",
+        "description": "Applicant only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          },
+          "422": {
+            "description": "File or business validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/resubmit": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Resubmit after RESUBMISSION_REQUESTED (within the window); evaluated again",
+        "description": "Applicant only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          },
+          "422": {
+            "description": "File or business validation failed"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/corrections": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Correct extracted fields, each with a reason (confidence 1.00, source OFFICER); rules re-run; case goes to the checker",
+        "description": "KYC Officer only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "corrections": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "doc_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 40
+                        },
+                        "field_name": {
+                          "type": "string",
+                          "enum": [
+                            "doc_type",
+                            "name",
+                            "dob",
+                            "gender",
+                            "pan_number",
+                            "aadhaar_last4",
+                            "address",
+                            "pincode",
+                            "document_date",
+                            "valid_until"
+                          ]
+                        },
+                        "new_value": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 500
+                        },
+                        "reason": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 2000
+                        }
+                      },
+                      "required": [
+                        "doc_id",
+                        "field_name",
+                        "new_value",
+                        "reason"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "corrections"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/recommendation": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Maker recommendation (comment at least 10 characters)",
+        "description": "KYC Officer only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "recommendation": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT",
+                      "REQUEST_RESUBMISSION"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "recommendation",
+                  "comment"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/checker-decision": {
+      "post": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Checker decision; maker and checker must differ (403); APPROVE opens the account through mock core banking",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "APPROVE",
+                      "REJECT",
+                      "SEND_BACK"
+                    ]
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000
+                  }
+                },
+                "required": [
+                  "action",
+                  "comment"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/review/queue": {
+      "get": {
+        "tags": [
+          "Workflow"
+        ],
+        "summary": "Officer: IN_REVIEW queue; Compliance Officer: PENDING_CHECKER queue. HIGH risk first, then oldest",
+        "description": "KYC Officer or Compliance Officer.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/applications/{applicationId}/ai-summary": {
+      "get": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "AI-5 reviewer summary of a case under review (AI-generated, at most 80 words, never a recommendation). 503 when no LLM is configured",
+        "description": "KYC Officer or Compliance Officer.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          },
+          "503": {
+            "description": "Dependency unavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{docId}/extract": {
+      "post": {
+        "tags": [
+          "Extraction"
+        ],
+        "summary": "FR-3 extraction interface: doc_type and fields with confidence (long format). Provider chosen by EXTRACTION_PROVIDER (mock | ai). Backend calls with x-service-key; officers may re-run",
+        "description": "Backend service key (x-service-key) or an officer.",
+        "security": [
+          {
+            "serviceKey": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/rule-config": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Active rule configuration",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Activate a new configuration version (old one kept, audited)",
+        "description": "Compliance Officer only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Full configuration as in case_02_rules_config_V1.0.json, with a new version"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/watchlists/sanctions": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Sanctions list",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Add a sanctions entry",
+        "description": "Compliance Officer only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "list_id",
+                  "name",
+                  "nationality",
+                  "program"
+                ],
+                "properties": {
+                  "list_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "alias": {
+                    "type": "string"
+                  },
+                  "dob": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "nationality": {
+                    "type": "string"
+                  },
+                  "program": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/watchlists/sanctions/{id}": {
+      "delete": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Remove a sanctions entry",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/watchlists/pep": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "PEP list",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Add a PEP entry",
+        "description": "Compliance Officer only.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pep_id",
+                  "name",
+                  "dob",
+                  "position",
+                  "category"
+                ],
+                "properties": {
+                  "pep_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "dob": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "position": {
+                    "type": "string"
+                  },
+                  "category": {
+                    "enum": [
+                      "DOMESTIC",
+                      "RCA"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/watchlists/pep/{id}": {
+      "delete": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Remove a PEP entry",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/rescreen": {
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Re-screen open cases against the current lists and configuration (statuses unchanged)",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/process-received": {
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Process the received (SUBMITTED) applications of the data pack: extraction + rules + routing, as a submission does",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/expire-overdue": {
+      "post": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Close RESUBMISSION_REQUESTED cases past the window (CLOSED_EXPIRED)",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/rekyc-due": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Approved customers whose re-KYC is due within N days",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 30
+            },
+            "description": "Window in days"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/dashboard": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "FR-10 dashboard figures (definitions included in the response)",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "application_date from"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "application_date to"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Invalid input; `fields` names each bad field"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/audit/{applicationId}": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Audit trail of an application, oldest first; ?format=csv exports it",
+        "description": "Compliance Officer only.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "json",
+                "csv"
+              ]
+            },
+            "description": "csv for the audit export"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/ai-evaluation": {
+      "get": {
+        "tags": [
+          "Compliance"
+        ],
+        "summary": "Generated evaluation metrics, report and model card",
+        "description": "Compliance Officer only.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "403": {
+            "description": "Role not allowed (or maker = checker)"
+          },
+          "404": {
+            "description": "Not found, or not yours (no data is revealed)"
+          }
+        }
+      }
+    },
+    "/internal/core-banking/accounts": {
+      "post": {
+        "tags": [
+          "Simulated services"
+        ],
+        "summary": "Mock core banking: customer ID and account number for an APPROVED application (x-service-key)",
+        "description": "Backend service key (x-service-key) or an officer.",
+        "security": [
+          {
+            "serviceKey": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "application_id"
+                ],
+                "properties": {
+                  "application_id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "401": {
+            "description": "Not signed in, or invalid service key"
+          },
+          "409": {
+            "description": "Wrong status, already exists, or someone else changed the case first (optimistic locking)"
+          }
+        }
+      }
+    }
+  }
+}

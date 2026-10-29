@@ -1,0 +1,50 @@
+{
+  "name": "onboardiq",
+  "private": true,
+  "description": "OnboardIQ - KYC onboarding with rules engine and maker-checker (HCLTech BFSI Use Case 02)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck",
+    "test": "npm --prefix backend test && npm --prefix frontend test",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d db",
+    "db:check": "npm --prefix backend run db:check",
+    "db:migrate": "npm --prefix backend run db:migrate",
+    "db:seed": "npm --prefix backend run db:seed --",
+    "db:reset": "npm --prefix backend run db:reset --",
+    "db:process": "npm --prefix backend run db:process",
+    "import": "npm --prefix backend run import --",
+    "db:seed-users": "npm --prefix backend run db:seed-users",
+    "e2e": "npm --prefix frontend run test:e2e",
+    "design": "npm --prefix backend run design",
+    "perf": "npm --prefix backend run perf",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
+    "batch": "npm --prefix backend run batch --",
+    "outputs": "npm --prefix backend run outputs --",
+    "outputs:validate": "npm --prefix backend run outputs:validate --",
+    "outputs:repeat": "npm --prefix backend run outputs:repeat"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^9.2.0",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.0",
+    "eslint-plugin-react-hooks": "^7.1.0",
+    "eslint-plugin-react-refresh": "^0.5.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.6.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.0"
+  }
+}

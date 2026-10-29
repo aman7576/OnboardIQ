@@ -1,0 +1,1183 @@
+{
+  "inputs": [
+    {
+      "file": "case_02_applications_eval_V1.0.csv",
+      "sha256": "325c00628a616e7337fc784af8bde99814c055c0462b346209e850644373077c"
+    },
+    {
+      "file": "case_02_applications_sample_V1.0.csv",
+      "sha256": "527d3167d89a12fc49224d8bdba23e4cacf33ad7a66cfd94a2d352d361f21cf3"
+    },
+    {
+      "file": "case_02_document_text_eval_V1.0.jsonl",
+      "sha256": "f17aa6b924b40ea32b9a9ee81c8268eee596ce5aae61a0a2d638e4bb6004d9b5"
+    },
+    {
+      "file": "case_02_document_text_sample_V1.0.jsonl",
+      "sha256": "e668f19e746d947b7a0bce5165a25f34cff1a846d6c93334770efc1ffc3c2f41"
+    },
+    {
+      "file": "case_02_document_truth_sample_V1.0.csv",
+      "sha256": "080b338c10d1074d6d4a6062e4b8838b56e65814e506281455bb1f0961fefdad"
+    },
+    {
+      "file": "case_02_documents_eval_V1.0.csv",
+      "sha256": "b5ef00806d7e344a94f8435458747b4411d6e86831dd9610853d2f8de3002a61"
+    },
+    {
+      "file": "case_02_documents_sample_V1.0.csv",
+      "sha256": "4ee55cef4a79e91445da1a5af1e96a1422c78f9c2a8788eb4cd9f8df226631f7"
+    },
+    {
+      "file": "case_02_existing_customers_V1.0.csv",
+      "sha256": "3d7fce79ae1350310899a2569d7dd4c3c1fd7a31b8a5ed6db43342c6dd630647"
+    },
+    {
+      "file": "case_02_extraction_mock_eval_V1.0.csv",
+      "sha256": "539d10daec13646d4093f15ec90130c5520cc7ca6023f08d8649c5fbbb6b11a6"
+    },
+    {
+      "file": "case_02_extraction_mock_sample_V1.0.csv",
+      "sha256": "9bd19aecc3cc3be0b11ace6259849bde23ce0847137f01f9988ee8c95e60172f"
+    },
+    {
+      "file": "case_02_occupations_V1.0.csv",
+      "sha256": "5752b6c94039475604f65cf1df57788cb309814587a4ba16386ddaf240ce4478"
+    },
+    {
+      "file": "case_02_pep_list_V1.0.csv",
+      "sha256": "8bf6c179709c410a1753ebf52fcbc32c5dba95475b1c919c693986ead81609c8"
+    },
+    {
+      "file": "case_02_rules_config_V1.0.json",
+      "sha256": "037f7f1e645d57244fb7dced2eb348d2b5bf25abf1746e6bc217bdb6c7d0000b"
+    },
+    {
+      "file": "case_02_sanctions_list_V1.0.csv",
+      "sha256": "16e9c11464f4fd297e7829ca1e93bd12cd2371f9960e333f3c85e89fd31748a8"
+    }
+  ],
+  "extractorVersion": "ai|rules=2.0.0|model=none|prompt=none",
+  "rulesEngineVersion": "1.0.0",
+  "poorScanDefinition": "a document is a \"poor scan\" when its text lacks the exact line `SYNTHETIC SPECIMEN - NOT A VALID DOCUMENT` (OCR damaged it). This definition is used only to split the report; the extractor does not use it.",
+  "sample": {
+    "documents": 178,
+    "applications": 60,
+    "declared": {
+      "documents": 178,
+      "classification": {
+        "overall": {
+          "correct": 175,
+          "total": 178,
+          "rate": 0.9831460674157303
+        },
+        "clean": {
+          "correct": 162,
+          "total": 165,
+          "rate": 0.9818181818181818
+        },
+        "poor": {
+          "correct": 13,
+          "total": 13,
+          "rate": 1
+        },
+        "confusion": {
+          "PAN_CARD": {
+            "PAN_CARD": 60,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "AADHAAR_CARD": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 57,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "ELECTRICITY_BILL": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 22,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "BANK_STATEMENT": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 1,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 26,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "DRIVING_LICENCE": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 10,
+            "OTHER": 0
+          },
+          "OTHER": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 1,
+            "BANK_STATEMENT": 1,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          }
+        },
+        "accurateWhenConfident": {
+          "correct": 175,
+          "total": 178,
+          "rate": 0.9831460674157303
+        }
+      },
+      "fields": {
+        "overall": {
+          "correct": 0,
+          "total": 768,
+          "rate": 0
+        },
+        "clean": {
+          "correct": 0,
+          "total": 710,
+          "rate": 0
+        },
+        "poor": {
+          "correct": 0,
+          "total": 58,
+          "rate": 0
+        },
+        "byField": {
+          "name": {
+            "correct": 0,
+            "total": 176,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 127,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 60,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 57,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 57,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 116,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 116,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 49,
+            "rate": 0
+          },
+          "valid_until": {
+            "correct": 0,
+            "total": 10,
+            "rate": 0
+          }
+        },
+        "cleanByField": {
+          "name": {
+            "correct": 0,
+            "total": 163,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 115,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 54,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 51,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 51,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 109,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 109,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 48,
+            "rate": 0
+          },
+          "valid_until": {
+            "correct": 0,
+            "total": 10,
+            "rate": 0
+          }
+        },
+        "poorByField": {
+          "name": {
+            "correct": 0,
+            "total": 13,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 12,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 1,
+            "rate": 0
+          }
+        }
+      },
+      "confidence": {
+        "threshold": 0.8,
+        "accepted": {
+          "correct": 0,
+          "total": 0,
+          "rate": null
+        },
+        "sentToReview": {
+          "correct": 0,
+          "total": 0,
+          "rate": null
+        },
+        "coverage": {
+          "correct": 0,
+          "total": 768,
+          "rate": 0
+        },
+        "correctSentToReview": 0
+      },
+      "injectionAsOther": {
+        "checked": 0,
+        "classifiedOther": 0
+      }
+    },
+    "keywordRule": {
+      "documents": 178,
+      "classification": {
+        "overall": {
+          "correct": 150,
+          "total": 178,
+          "rate": 0.8426966292134831
+        },
+        "clean": {
+          "correct": 139,
+          "total": 165,
+          "rate": 0.8424242424242424
+        },
+        "poor": {
+          "correct": 11,
+          "total": 13,
+          "rate": 0.8461538461538461
+        },
+        "confusion": {
+          "PAN_CARD": {
+            "PAN_CARD": 59,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 1
+          },
+          "AADHAAR_CARD": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 57,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "ELECTRICITY_BILL": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 22,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "BANK_STATEMENT": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 27,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 0
+          },
+          "DRIVING_LICENCE": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 10,
+            "OTHER": 0
+          },
+          "OTHER": {
+            "PAN_CARD": 0,
+            "AADHAAR_CARD": 0,
+            "ELECTRICITY_BILL": 0,
+            "BANK_STATEMENT": 0,
+            "DRIVING_LICENCE": 0,
+            "OTHER": 2
+          }
+        },
+        "accurateWhenConfident": {
+          "correct": 150,
+          "total": 178,
+          "rate": 0.8426966292134831
+        }
+      },
+      "fields": {
+        "overall": {
+          "correct": 0,
+          "total": 768,
+          "rate": 0
+        },
+        "clean": {
+          "correct": 0,
+          "total": 710,
+          "rate": 0
+        },
+        "poor": {
+          "correct": 0,
+          "total": 58,
+          "rate": 0
+        },
+        "byField": {
+          "name": {
+            "correct": 0,
+            "total": 176,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 127,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 60,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 57,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 57,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 116,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 116,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 49,
+            "rate": 0
+          },
+          "valid_until": {
+            "correct": 0,
+            "total": 10,
+            "rate": 0
+          }
+        },
+        "cleanByField": {
+          "name": {
+            "correct": 0,
+            "total": 163,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 115,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 54,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 51,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 51,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 109,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 109,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 48,
+            "rate": 0
+          },
+          "valid_until": {
+            "correct": 0,
+            "total": 10,
+            "rate": 0
+          }
+        },
+        "poorByField": {
+          "name": {
+            "correct": 0,
+            "total": 13,
+            "rate": 0
+          },
+          "dob": {
+            "correct": 0,
+            "total": 12,
+            "rate": 0
+          },
+          "pan_number": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "gender": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "aadhaar_last4": {
+            "correct": 0,
+            "total": 6,
+            "rate": 0
+          },
+          "address": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0
+          },
+          "pincode": {
+            "correct": 0,
+            "total": 7,
+            "rate": 0
+          },
+          "document_date": {
+            "correct": 0,
+            "total": 1,
+            "rate": 0
+          }
+        }
+      },
+      "confidence": {
+        "threshold": 0.8,
+        "accepted": {
+          "correct": 0,
+          "total": 0,
+          "rate": null
+        },
+        "sentToReview": {
+          "correct": 0,
+          "total": 0,
+          "rate": null
+        },
+        "coverage": {
+          "correct": 0,
+          "total": 768,
+          "rate": 0
+        },
+        "correctSentToReview": 0
+      },
+      "injectionAsOther": {
+        "checked": 0,
+        "classifiedOther": 0
+      }
+    },
+    "regexOnly": {
+      "label": "regex-only first version (rules 1.0.0)",
+      "metrics": {
+        "documents": 178,
+        "classification": {
+          "overall": {
+            "correct": 150,
+            "total": 178,
+            "rate": 0.8426966292134831
+          },
+          "clean": {
+            "correct": 139,
+            "total": 165,
+            "rate": 0.8424242424242424
+          },
+          "poor": {
+            "correct": 11,
+            "total": 13,
+            "rate": 0.8461538461538461
+          },
+          "confusion": {
+            "PAN_CARD": {
+              "PAN_CARD": 59,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 1
+            },
+            "AADHAAR_CARD": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 57,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "ELECTRICITY_BILL": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 22,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "BANK_STATEMENT": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 27,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "DRIVING_LICENCE": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 10,
+              "OTHER": 0
+            },
+            "OTHER": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 2
+            }
+          },
+          "accurateWhenConfident": {
+            "correct": 150,
+            "total": 178,
+            "rate": 0.8426966292134831
+          }
+        },
+        "fields": {
+          "overall": {
+            "correct": 639,
+            "total": 768,
+            "rate": 0.83203125
+          },
+          "clean": {
+            "correct": 606,
+            "total": 710,
+            "rate": 0.8535211267605634
+          },
+          "poor": {
+            "correct": 33,
+            "total": 58,
+            "rate": 0.5689655172413793
+          },
+          "byField": {
+            "name": {
+              "correct": 142,
+              "total": 176,
+              "rate": 0.8068181818181818
+            },
+            "dob": {
+              "correct": 123,
+              "total": 127,
+              "rate": 0.968503937007874
+            },
+            "pan_number": {
+              "correct": 58,
+              "total": 60,
+              "rate": 0.9666666666666667
+            },
+            "gender": {
+              "correct": 57,
+              "total": 57,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 57,
+              "total": 57,
+              "rate": 1
+            },
+            "address": {
+              "correct": 83,
+              "total": 116,
+              "rate": 0.7155172413793104
+            },
+            "pincode": {
+              "correct": 87,
+              "total": 116,
+              "rate": 0.75
+            },
+            "document_date": {
+              "correct": 22,
+              "total": 49,
+              "rate": 0.4489795918367347
+            },
+            "valid_until": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1
+            }
+          },
+          "cleanByField": {
+            "name": {
+              "correct": 137,
+              "total": 163,
+              "rate": 0.8404907975460123
+            },
+            "dob": {
+              "correct": 115,
+              "total": 115,
+              "rate": 1
+            },
+            "pan_number": {
+              "correct": 54,
+              "total": 54,
+              "rate": 1
+            },
+            "gender": {
+              "correct": 51,
+              "total": 51,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 51,
+              "total": 51,
+              "rate": 1
+            },
+            "address": {
+              "correct": 83,
+              "total": 109,
+              "rate": 0.7614678899082569
+            },
+            "pincode": {
+              "correct": 83,
+              "total": 109,
+              "rate": 0.7614678899082569
+            },
+            "document_date": {
+              "correct": 22,
+              "total": 48,
+              "rate": 0.4583333333333333
+            },
+            "valid_until": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1
+            }
+          },
+          "poorByField": {
+            "name": {
+              "correct": 5,
+              "total": 13,
+              "rate": 0.38461538461538464
+            },
+            "dob": {
+              "correct": 8,
+              "total": 12,
+              "rate": 0.6666666666666666
+            },
+            "pan_number": {
+              "correct": 4,
+              "total": 6,
+              "rate": 0.6666666666666666
+            },
+            "gender": {
+              "correct": 6,
+              "total": 6,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 6,
+              "total": 6,
+              "rate": 1
+            },
+            "address": {
+              "correct": 0,
+              "total": 7,
+              "rate": 0
+            },
+            "pincode": {
+              "correct": 4,
+              "total": 7,
+              "rate": 0.5714285714285714
+            },
+            "document_date": {
+              "correct": 0,
+              "total": 1,
+              "rate": 0
+            }
+          }
+        },
+        "confidence": {
+          "threshold": 0.8,
+          "accepted": {
+            "correct": 639,
+            "total": 649,
+            "rate": 0.9845916795069337
+          },
+          "sentToReview": {
+            "correct": 0,
+            "total": 0,
+            "rate": null
+          },
+          "coverage": {
+            "correct": 649,
+            "total": 768,
+            "rate": 0.8450520833333334
+          },
+          "correctSentToReview": 0
+        },
+        "injectionAsOther": {
+          "checked": 0,
+          "classifiedOther": 0
+        }
+      }
+    },
+    "ai": {
+      "label": "AI provider, deterministic rules 2.0.0 (ai|rules=2.0.0|model=none|prompt=none)",
+      "metrics": {
+        "documents": 178,
+        "classification": {
+          "overall": {
+            "correct": 178,
+            "total": 178,
+            "rate": 1
+          },
+          "clean": {
+            "correct": 165,
+            "total": 165,
+            "rate": 1
+          },
+          "poor": {
+            "correct": 13,
+            "total": 13,
+            "rate": 1
+          },
+          "confusion": {
+            "PAN_CARD": {
+              "PAN_CARD": 60,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "AADHAAR_CARD": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 57,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "ELECTRICITY_BILL": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 22,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "BANK_STATEMENT": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 27,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 0
+            },
+            "DRIVING_LICENCE": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 10,
+              "OTHER": 0
+            },
+            "OTHER": {
+              "PAN_CARD": 0,
+              "AADHAAR_CARD": 0,
+              "ELECTRICITY_BILL": 0,
+              "BANK_STATEMENT": 0,
+              "DRIVING_LICENCE": 0,
+              "OTHER": 2
+            }
+          },
+          "accurateWhenConfident": {
+            "correct": 178,
+            "total": 178,
+            "rate": 1
+          }
+        },
+        "fields": {
+          "overall": {
+            "correct": 764,
+            "total": 768,
+            "rate": 0.9947916666666666
+          },
+          "clean": {
+            "correct": 710,
+            "total": 710,
+            "rate": 1
+          },
+          "poor": {
+            "correct": 54,
+            "total": 58,
+            "rate": 0.9310344827586207
+          },
+          "byField": {
+            "name": {
+              "correct": 172,
+              "total": 176,
+              "rate": 0.9772727272727273
+            },
+            "dob": {
+              "correct": 127,
+              "total": 127,
+              "rate": 1
+            },
+            "pan_number": {
+              "correct": 60,
+              "total": 60,
+              "rate": 1
+            },
+            "gender": {
+              "correct": 57,
+              "total": 57,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 57,
+              "total": 57,
+              "rate": 1
+            },
+            "address": {
+              "correct": 116,
+              "total": 116,
+              "rate": 1
+            },
+            "pincode": {
+              "correct": 116,
+              "total": 116,
+              "rate": 1
+            },
+            "document_date": {
+              "correct": 49,
+              "total": 49,
+              "rate": 1
+            },
+            "valid_until": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1
+            }
+          },
+          "cleanByField": {
+            "name": {
+              "correct": 163,
+              "total": 163,
+              "rate": 1
+            },
+            "dob": {
+              "correct": 115,
+              "total": 115,
+              "rate": 1
+            },
+            "pan_number": {
+              "correct": 54,
+              "total": 54,
+              "rate": 1
+            },
+            "gender": {
+              "correct": 51,
+              "total": 51,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 51,
+              "total": 51,
+              "rate": 1
+            },
+            "address": {
+              "correct": 109,
+              "total": 109,
+              "rate": 1
+            },
+            "pincode": {
+              "correct": 109,
+              "total": 109,
+              "rate": 1
+            },
+            "document_date": {
+              "correct": 48,
+              "total": 48,
+              "rate": 1
+            },
+            "valid_until": {
+              "correct": 10,
+              "total": 10,
+              "rate": 1
+            }
+          },
+          "poorByField": {
+            "name": {
+              "correct": 9,
+              "total": 13,
+              "rate": 0.6923076923076923
+            },
+            "dob": {
+              "correct": 12,
+              "total": 12,
+              "rate": 1
+            },
+            "pan_number": {
+              "correct": 6,
+              "total": 6,
+              "rate": 1
+            },
+            "gender": {
+              "correct": 6,
+              "total": 6,
+              "rate": 1
+            },
+            "aadhaar_last4": {
+              "correct": 6,
+              "total": 6,
+              "rate": 1
+            },
+            "address": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1
+            },
+            "pincode": {
+              "correct": 7,
+              "total": 7,
+              "rate": 1
+            },
+            "document_date": {
+              "correct": 1,
+              "total": 1,
+              "rate": 1
+            }
+          }
+        },
+        "confidence": {
+          "threshold": 0.8,
+          "accepted": {
+            "correct": 742,
+            "total": 742,
+            "rate": 1
+          },
+          "sentToReview": {
+            "correct": 22,
+            "total": 25,
+            "rate": 0.88
+          },
+          "coverage": {
+            "correct": 742,
+            "total": 768,
+            "rate": 0.9661458333333334
+          },
+          "correctSentToReview": 22
+        },
+        "injectionAsOther": {
+          "checked": 0,
+          "classifiedOther": 0
+        }
+      }
+    },
+    "mockVsExpected": {
+      "checked": 60,
+      "mismatches": []
+    },
+    "aiVsExpected": {
+      "checked": 60,
+      "mismatches": [
+        {
+          "applicationId": "A2000021",
+          "column": "decision",
+          "expected": "APPROVE",
+          "actual": "REVIEW"
+        },
+        {
+          "applicationId": "A2000021",
+          "column": "reason_codes",
+          "expected": "",
+          "actual": "LOW_EXTRACTION_CONFIDENCE"
+        },
+        {
+          "applicationId": "A2000050",
+          "column": "reason_codes",
+          "expected": "LOW_EXTRACTION_CONFIDENCE|PAN_INVALID",
+          "actual": "PAN_INVALID"
+        }
+      ],
+      "applicationsDiffering": [
+        "A2000021",
+        "A2000050"
+      ]
+    },
+    "example9": {
+      "aiDecision": "REVIEW",
+      "aiReasonCodes": [
+        "LOW_EXTRACTION_CONFIDENCE"
+      ],
+      "panValue": "ZZTPS9012Y",
+      "panConfidence": 0.9,
+      "fieldsBelowThreshold": [
+        {
+          "docType": "PAN_CARD",
+          "field": "name",
+          "confidence": 0.72
+        }
+      ]
+    }
+  },
+  "evaluation": {
+    "applications": 100,
+    "documents": 296,
+    "mockDecisionCounts": {
+      "REVIEW": 31,
+      "APPROVE": 51,
+      "REJECT": 18
+    },
+    "aiDecisionCounts": {
+      "REVIEW": 29,
+      "APPROVE": 53,
+      "REJECT": 18
+    },
+    "aiVsMockDecisionAgreement": {
+      "correct": 98,
+      "total": 100,
+      "rate": 0.98
+    },
+    "docTypeAgreementWithMock": {
+      "correct": 296,
+      "total": 296,
+      "rate": 1
+    },
+    "fieldAgreementWithMock": {
+      "correct": 1238,
+      "total": 1259,
+      "rate": 0.9833200953137411
+    },
+    "injection": {
+      "docId": "D3000486",
+      "applicationId": "A2100100",
+      "aiDocType": "OTHER",
+      "aiWarnings": [
+        "prompt_injection_suspected"
+      ],
+      "mockDocType": "OTHER",
+      "keywordRuleDocType": "AADHAAR_CARD",
+      "decisionWithAi": "REVIEW"
+    },
+    "nameMismatchMinorByGender": [
+      {
+        "gender": "F",
+        "applications": 50,
+        "mock": 1,
+        "ai": 1
+      },
+      {
+        "gender": "M",
+        "applications": 50,
+        "mock": 1,
+        "ai": 1
+      }
+    ],
+    "lowConfidenceAiDocuments": 0
+  },
+  "officerFeedback": {
+    "aiFieldsExtracted": 0,
+    "officerCorrections": 0
+  },
+  "databaseVsFilesIdentical": true
+}

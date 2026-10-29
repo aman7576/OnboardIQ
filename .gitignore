@@ -1,0 +1,23 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Secrets: only the *.example files are committed
+.env
+.env.*
+!.env.example
+
+# /output holds the graded deliverables (generated deterministically by `npm run outputs` and `npm run design`):
+# they are committed. Only scratch files are ignored.
+output/**/*.tmp
+
+/docs/
+# Evaluator-only spec copy: never commit
+csvFiles/*.docx
+
+# Uploaded documents (outside the web root)
+storage/
+test-results/
+playwright-report/

@@ -1,0 +1,516 @@
+@import 'tailwindcss';
+
+/* Brand tokens shared with RetailPulse's storefront: ivory / ink / forest, Fraunces + Geist. */
+@theme {
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+
+  --color-ivory: #f8f5ee;
+  --color-ivory-deep: #efe9dc;
+  --color-ink: #17191a;
+  --color-ink-soft: #5b5f5c;
+  --color-line: #e2dbcc;
+  --color-forest: #1f4d3a;
+  --color-forest-deep: #163a2b;
+  --color-forest-soft: #e2ebe3;
+  --color-amber: #9a5b0b;
+  --color-amber-soft: #f6ead3;
+  --color-danger: #a8321f;
+  --color-danger-soft: #f7e3de;
+}
+
+@layer base {
+  body {
+    @apply bg-ivory font-sans text-ink antialiased;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-forest;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Rendered markdown (evaluation report, model card) */
+.markdown {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.markdown h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin: 0 0 0.75rem;
+}
+.markdown h2 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.markdown h3 {
+  font-weight: 600;
+  margin: 1rem 0 0.35rem;
+}
+.markdown p,
+.markdown ul,
+.markdown ol {
+  margin: 0.5rem 0;
+}
+.markdown ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.markdown ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.markdown code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  background: var(--color-ivory);
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+.markdown pre {
+  overflow: auto;
+  background: var(--color-ivory);
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+.markdown table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+}
+.markdown th,
+.markdown td {
+  border: 1px solid var(--color-line);
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+}
+.markdown th {
+  background: var(--color-ivory);
+}
+
+/* IQ chatbot robot */
+@keyframes iq-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes iq-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes iq-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes iq-wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-6deg);
+  }
+  75% {
+    transform: rotate(6deg);
+  }
+}
+@keyframes iq-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+@keyframes iq-dot {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.iq-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: iq-blink 4.5s infinite;
+}
+.iq-antenna {
+  animation: iq-glow 1.6s ease-in-out infinite;
+}
+.iq-float {
+  animation: iq-bob 3s ease-in-out infinite;
+}
+.iq-talk {
+  animation: iq-wiggle 0.6s ease-in-out infinite;
+}
+.iq-pop {
+  animation: iq-pop 0.2s ease-out;
+}
+.iq-dot {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-forest);
+  animation: iq-dot 1s infinite;
+}
+
+/* ── Motion kit: aurora background, entrance, timeline, shimmer ─────────────────────────── */
+@keyframes fx-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(60px, 40px) scale(1.15);
+  }
+}
+@keyframes fx-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(-70px, -30px) scale(0.95);
+  }
+}
+@keyframes fx-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes fx-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+@keyframes fx-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes fx-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes fx-step {
+  0%,
+  3% {
+    background: #fff;
+    color: var(--color-ink-soft);
+    border-color: var(--color-line);
+    transform: scale(1);
+  }
+  8%,
+  86% {
+    background: var(--color-forest);
+    color: #fff;
+    border-color: var(--color-forest);
+    transform: scale(1.08);
+  }
+  94%,
+  100% {
+    background: #fff;
+    color: var(--color-ink-soft);
+    border-color: var(--color-line);
+    transform: scale(1);
+  }
+}
+@keyframes fx-line {
+  0%,
+  8% {
+    transform: scaleY(0);
+  }
+  20%,
+  86% {
+    transform: scaleY(1);
+  }
+  94%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+@keyframes fx-check {
+  0%,
+  60% {
+    stroke-dashoffset: 24;
+  }
+  80%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.fx-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.fx-aurora::before,
+.fx-aurora::after {
+  content: '';
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.55;
+}
+.fx-aurora::before {
+  top: -10rem;
+  left: -8rem;
+  background: radial-gradient(circle, #9fd8b8, transparent 65%);
+  animation: fx-drift-a 16s ease-in-out infinite;
+}
+.fx-aurora::after {
+  bottom: -12rem;
+  right: -6rem;
+  background: radial-gradient(circle, #f1cf8f, transparent 65%);
+  animation: fx-drift-b 19s ease-in-out infinite;
+}
+.fx-aurora-dark::before {
+  background: radial-gradient(circle, #2f7a5c, transparent 65%);
+  opacity: 0.7;
+}
+.fx-aurora-dark::after {
+  background: radial-gradient(circle, #1f4d3a, transparent 65%);
+}
+.fx-grid {
+  background-image: radial-gradient(rgba(31, 77, 58, 0.14) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
+.fx-up {
+  animation: fx-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.fx-float {
+  animation: fx-float 7s ease-in-out infinite;
+}
+.fx-shimmer-text {
+  background: linear-gradient(
+    100deg,
+    var(--color-forest) 20%,
+    #4aa37c 40%,
+    var(--color-forest) 60%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fx-shimmer 5s linear infinite;
+}
+.fx-skeleton {
+  background: linear-gradient(90deg, #ece6d8 25%, #f7f3ea 50%, #ece6d8 75%);
+  background-size: 200% 100%;
+  animation: fx-shimmer 2.2s linear infinite;
+}
+.fx-ring {
+  animation: fx-ring 2s ease-out infinite;
+}
+.fx-step {
+  animation: fx-step 10s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 1.3s);
+}
+.fx-line {
+  transform-origin: top;
+  animation: fx-line 10s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 1.3s);
+}
+.fx-check {
+  stroke-dasharray: 24;
+  animation: fx-check 4s ease-in-out infinite;
+}
+.fx-glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.8) inset,
+    0 24px 60px -24px rgba(22, 58, 43, 0.35);
+}
+.fx-stagger > * {
+  animation: fx-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.fx-stagger > *:nth-child(2) {
+  animation-delay: 0.08s;
+}
+.fx-stagger > *:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.fx-stagger > *:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.fx-stagger > *:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+/* ── Officer portal motion ───────────────────────────────────────────────────────────────── */
+@keyframes fx-row-hl {
+  0%,
+  22% {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateX(6px);
+  }
+  30%,
+  100% {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(0);
+  }
+}
+@keyframes fx-bar {
+  0% {
+    transform: scaleX(0);
+  }
+  35%,
+  100% {
+    transform: scaleX(var(--w));
+  }
+}
+@keyframes fx-scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+@keyframes fx-travel {
+  0% {
+    left: 0;
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  12% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% - 0.6rem);
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes fx-node {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(159, 227, 192, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(159, 227, 192, 0.22);
+  }
+}
+@keyframes fx-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes fx-count {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.fx-row {
+  animation:
+    fx-up 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    fx-row-hl 9s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.12s), calc(var(--i) * 2.25s);
+}
+.fx-bar {
+  transform-origin: left;
+  animation: fx-bar 9s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 2.25s);
+}
+.fx-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #9fe3c0, transparent);
+  box-shadow: 0 0 14px 2px rgba(159, 227, 192, 0.55);
+  animation: fx-scan 4.5s ease-in-out infinite;
+}
+.fx-travel {
+  position: absolute;
+  top: 50%;
+  margin-top: -0.3rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 9999px;
+  background: #9fe3c0;
+  box-shadow: 0 0 10px 2px rgba(159, 227, 192, 0.7);
+  animation: fx-travel 2.8s ease-in-out infinite;
+}
+.fx-node {
+  animation: fx-node 2.8s ease-in-out infinite;
+}
+.fx-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: fx-sweep 3.6s ease-in-out infinite;
+}
+.fx-count {
+  animation: fx-count 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i) * 0.12s + 0.5s);
+}
